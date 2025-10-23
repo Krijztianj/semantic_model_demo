@@ -1,5 +1,7 @@
 -- Dimension: dim_supplier (Delta Table with Surrogate Key)
-CREATE TABLE IF NOT EXISTS demo_tpch.dim_supplier (
+-- Note: Run 00_config.sql first to set catalog_name and schema_name variables
+
+CREATE TABLE IF NOT EXISTS ${schema_name}.dim_supplier (
   supplier_id BIGINT GENERATED ALWAYS AS IDENTITY,
   supplier_key BIGINT,
   supplier_name STRING,
@@ -11,7 +13,7 @@ CREATE TABLE IF NOT EXISTS demo_tpch.dim_supplier (
 ) USING DELTA;
 
 -- Populate dim_supplier with surrogate key
-INSERT INTO demo_tpch.dim_supplier (supplier_key, supplier_name, phone, account_balance, nation, region)
+INSERT INTO ${schema_name}.dim_supplier (supplier_key, supplier_name, phone, account_balance, nation, region)
 SELECT DISTINCT
   s.s_suppkey,
   s.s_name,

@@ -1,5 +1,7 @@
 -- Dimension: dim_customer (Delta Table with Surrogate Key)
-CREATE TABLE IF NOT EXISTS demo_tpch.dim_customer (
+-- Note: Run 00_config.sql first to set catalog_name and schema_name variables
+
+CREATE TABLE IF NOT EXISTS ${schema_name}.dim_customer (
   customer_id BIGINT GENERATED ALWAYS AS IDENTITY,
   customer_key BIGINT,
   customer_name STRING,
@@ -12,7 +14,7 @@ CREATE TABLE IF NOT EXISTS demo_tpch.dim_customer (
 ) USING DELTA;
 
 -- Populate dim_customer with surrogate key
-INSERT INTO demo_tpch.dim_customer (customer_key, customer_name, market_segment, phone, account_balance, nation, region)
+INSERT INTO ${schema_name}.dim_customer (customer_key, customer_name, market_segment, phone, account_balance, nation, region)
 SELECT DISTINCT
   c.c_custkey,
   c.c_name,

@@ -1,5 +1,7 @@
 -- Dimension: dim_date (Delta Table with Surrogate Key)
-CREATE TABLE IF NOT EXISTS demo_tpch.dim_date (
+-- Note: Run 00_config.sql first to set catalog_name and schema_name variables
+
+CREATE TABLE IF NOT EXISTS ${schema_name}.dim_date (
   date_id BIGINT GENERATED ALWAYS AS IDENTITY,
   date_key DATE,
   full_date DATE,
@@ -16,7 +18,7 @@ CREATE TABLE IF NOT EXISTS demo_tpch.dim_date (
 CREATE OR REPLACE TEMP VIEW date_src AS
 SELECT explode(sequence(date('1992-01-01'), date('1998-12-31'), interval 1 day)) AS calendar_date;
 
-INSERT INTO demo_tpch.dim_date (date_key, full_date, year, quarter, month, day, weekday_name, is_weekend)
+INSERT INTO ${schema_name}.dim_date (date_key, full_date, year, quarter, month, day, weekday_name, is_weekend)
 SELECT
   calendar_date,
   calendar_date,
