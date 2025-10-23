@@ -1,6 +1,11 @@
 # Semantic Model Demo - Data Warehouse
 
-This repository contains scripts to create a dimensional data warehouse model based on the TPC-H dataset.
+This repository contains scripts to create a dimensional data warehouse model based on the TPC-H dataset, along with a semantic model definition for analytics and BI tools.
+
+## Repository Contents
+
+- **`setup_datawarehouse.py`** - Databricks notebook to create the data warehouse
+- **`semantic_model.yml`** - Semantic model definition (version 1.0) with metrics, dimensions, and relationships
 
 ## Quick Start (Recommended)
 
@@ -52,9 +57,37 @@ fact_order_line
 └── receipt_date_id (FK → dim_date)
 ```
 
+## Semantic Model
+
+The **`semantic_model.yml`** file defines the business logic layer for analytics:
+
+### Features (Version 1.0)
+- ✅ **Tags** for organizing metrics and dimensions (kpi, financial, geography, etc.)
+- ✅ **Formats** for consistent display ($#,##0.00, 0.0%, etc.)
+- ✅ **Measures** with aggregations (sum, avg, count, count_distinct)
+- ✅ **Calculated metrics** (avg_order_value, avg_items_per_order)
+- ✅ **Relationships** defined between fact and dimension tables
+- ✅ **Metadata** with tag descriptions
+
+### Key Metrics
+- **total_net_amount** - Net revenue after discounts
+- **total_gross_revenue** - Gross revenue including tax
+- **total_orders** - Count of distinct orders
+- **total_quantity** - Sum of items ordered
+- **avg_order_value** - Average net amount per order
+- **avg_discount_rate** - Average discount percentage
+
+### Dimensions
+- **Customer** - name, market segment, nation, region
+- **Date** - year, quarter, month, day, weekend indicator
+- **Part** - name, brand, type, size, container
+- **Supplier** - name, nation, region
+- **Order Header** - status, priority, clerk
+
 ## Technical Details
 
 - **Source Data**: samples.tpch (Databricks sample dataset)
 - **Storage Format**: Delta Lake
 - **Surrogate Keys**: Auto-generated using IDENTITY columns
 - **Key Naming Convention**: `{table_name}_id` for surrogate keys, `{table_name}_key` for business keys
+- **Semantic Model**: YAML version 1.0 with tags and format support
