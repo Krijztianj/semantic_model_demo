@@ -57,32 +57,67 @@ fact_order_line
 └── receipt_date_id (FK → dim_date)
 ```
 
-## Semantic Model
+## Semantic Model / Metric View
 
-The **`semantic_model.yml`** file defines the business logic layer for analytics:
+The **`semantic_model_v1.yml`** file defines a Databricks Metric View for consistent business metrics:
 
-### Features (Version 1.0)
-- ✅ **Tags** for organizing metrics and dimensions (kpi, financial, geography, etc.)
-- ✅ **Formats** for consistent display ($#,##0.00, 0.0%, etc.)
-- ✅ **Measures** with aggregations (sum, avg, count, count_distinct)
-- ✅ **Calculated metrics** (avg_order_value, avg_items_per_order)
-- ✅ **Relationships** defined between fact and dimension tables
-- ✅ **Metadata** with tag descriptions
+### Features (Version 1.1)
+- ✅ **Semantic metadata** with `display_name`, `format`, and `synonyms` for AI/BI tools
+- ✅ **Star schema joins** to all dimension tables
+- ✅ **Measures** with aggregations (SUM, AVG, COUNT, COUNT DISTINCT)
+- ✅ **Calculated metrics** using `MEASURE()` references (Average Order Value, Discount Percentage)
+- ✅ **Dimensions** from fact and all joined dimension tables
+- ✅ **Format strings** for currency ($#,##0.00), percentages (0.0%), and numbers (#,##0)
+
+### Creating the Metric View
+
+The metric view is **automatically created** when you run `setup_datawarehouse.py`! The notebook includes a cell that creates the metric view using SQL with embedded YAML:
+
+```sql
+CREATE OR REPLACE VIEW catalog.schema.order_metrics_mv
+WITH METRICS
+LANGUAGE YAML
+COMMENT 'TPC-H Order Analytics Metric View'
+AS $$
+-- YAML definition embedded here
+$$;
+```
+
+The YAML definition is embedded directly in the SQL, so no separate file upload is needed.
 
 ### Key Metrics
-- **total_net_amount** - Net revenue after discounts
-- **total_gross_revenue** - Gross revenue including tax
-- **total_orders** - Count of distinct orders
-- **total_quantity** - Sum of items ordered
-- **avg_order_value** - Average net amount per order
-- **avg_discount_rate** - Average discount percentage
+- **Total Net Amount** - Net revenue after discounts
+- **Total Gross Revenue** - Gross revenue including tax
+- **Total Orders** - Count of distinct orders
+- **Total Quantity** - Sum of items ordered
+- **Average Order Value** - Calculated: Net Amount / Orders
+- **Average Discount Rate** - Average discount percentage
+- **Discount Percentage** - Calculated: Discount / Extended Amount
 
-### Dimensions
-- **Customer** - name, market segment, nation, region
-- **Date** - year, quarter, month, day, weekend indicator
-- **Part** - name, brand, type, size, container
-- **Supplier** - name, nation, region
-- **Order Header** - status, priority, clerk
+### Available Dimensions
+- **Customer** - Name, Market Segment, Nation, Region
+- **Ship Date** - Year, Quarter, Month, Date, Weekday, Is Weekend
+- **Part** - Name, Brand, Type, Size, Container
+- **Supplier** - Name, Nation, Region
+- **Order Header** - Status, Priority, Clerk Name
+- **Fact** - Order Header ID, Line Number, Ship Mode
+
+### Querying the Metric View
+
+Use the `MEASURE()` function to query metrics:
+
+```sql
+SELECT 
+  `Customer Region`,
+  `Ship Year`,
+  MEASURE(`Total Net Amount`) as revenue,
+  MEASURE(`Total Orders`) as orders,
+  MEASURE(`Average Order Value`) as aov
+FROM main.demo_tpch.order_metrics_mv
+WHERE `Ship Year` = 1997
+GROUP BY `Customer Region`, `Ship Year`
+ORDER BY revenue DESC
+```
 
 ## Technical Details
 
