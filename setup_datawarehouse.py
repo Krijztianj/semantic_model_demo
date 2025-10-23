@@ -2,7 +2,7 @@
 # MAGIC %md
 # MAGIC # Semantic Model Demo - Data Warehouse Setup
 # MAGIC This notebook creates a dimensional data warehouse model based on the TPC-H dataset.
-# MAGIC 
+# MAGIC
 # MAGIC ## Features
 # MAGIC - Delta tables with surrogate keys (_id suffix)
 # MAGIC - Primary and Foreign key constraints
@@ -274,13 +274,13 @@ CREATE TABLE IF NOT EXISTS fact_order_line (
   receipt_date_id BIGINT,
   ship_mode STRING,
   PRIMARY KEY (order_header_id, line_number),
-  FOREIGN KEY (order_header_id) REFERENCES dim_order_header(order_header_id),
-  FOREIGN KEY (part_id) REFERENCES dim_part(part_id),
-  FOREIGN KEY (supplier_id) REFERENCES dim_supplier(supplier_id),
-  FOREIGN KEY (customer_id) REFERENCES dim_customer(customer_id),
-  FOREIGN KEY (ship_date_id) REFERENCES dim_date(date_id),
-  FOREIGN KEY (commit_date_id) REFERENCES dim_date(date_id),
-  FOREIGN KEY (receipt_date_id) REFERENCES dim_date(date_id)
+  CONSTRAINT fk_order_header FOREIGN KEY (order_header_id) REFERENCES dim_order_header(order_header_id),
+  CONSTRAINT fk_part FOREIGN KEY (part_id) REFERENCES dim_part(part_id),
+  CONSTRAINT fk_supplier FOREIGN KEY (supplier_id) REFERENCES dim_supplier(supplier_id),
+  CONSTRAINT fk_customer FOREIGN KEY (customer_id) REFERENCES dim_customer(customer_id),
+  CONSTRAINT fk_ship_date FOREIGN KEY (ship_date_id) REFERENCES dim_date(date_id),
+  CONSTRAINT fk_commit_date FOREIGN KEY (commit_date_id) REFERENCES dim_date(date_id),
+  CONSTRAINT fk_receipt_date FOREIGN KEY (receipt_date_id) REFERENCES dim_date(date_id)
 ) USING DELTA
 """
 
