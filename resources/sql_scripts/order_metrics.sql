@@ -2,7 +2,7 @@ USE CATALOG demo;
 USE SCHEMA tpch_semantic;
 
 
-CREATE OR REPLACE VIEW krjo_demo.semantic_model.order_metrics_mv
+CREATE OR REPLACE VIEW order_metrics_mv
 WITH METRICS
 LANGUAGE YAML
 COMMENT 'TPC-H Order Analytics Metric View - Core business metrics'
