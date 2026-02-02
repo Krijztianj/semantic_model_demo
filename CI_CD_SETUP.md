@@ -1,62 +1,116 @@
-# CI/CD Setup Guide for Databricks Asset Bundle
+# CI/CD Setup Guide
+
+> GitHub Actions configuration for automated Databricks Asset Bundle deployment
+
+## Table of Contents
+- [Prerequisites](#prerequisites)
+- [GitHub Secrets Setup](#github-secrets-setup)
+- [Workflows Overview](#workflows-overview)
+- [Usage](#usage)
+- [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
-⚠️ **IMPORTANT**: Before running any GitHub Actions workflows, you must configure the required secrets in your repository.
-1. Validates the DAB configuration
-2. Deploys the bundle to Databricks
-3. Runs the data warehouse setup job
+⚠️ **Required before workflows will function:**
 
-## Workflow Triggersre Set
-After adding secrets:
-1. Go to Repository → Settings → Secrets and variables → Actions
-2. You should see both `DATABRICKS_HOST` and `DATABRICKS_TOKEN` listed
+1. ✅ GitHub repository with admin access
+2. ✅ Databricks workspace
+3. ✅ Personal Access Token (PAT) for Databricks
+4. ✅ Repository secrets configured (see below)
+
+## GitHub Secrets Setup
+
+### Step 1: Generate Databricks Token
+
+1. Log into your Databricks workspace
+2. Go to **User Settings** → **Developer** → **Access Tokens**
+3. Click **"Generate New Token"**
+4. Set description: `GitHub Actions CI/CD`
+5. Set expiration: 90 days (recommended)
+6. **Copy the token immediately** (only shown once!)
+
+### Step 2: Add Secrets to GitHub
+
+1. Navigate to: **Repository** → **Settings** → **Secrets and variables** → **Actions**
+2. Click **"New repository secret"**
+3. Add both secrets:
+
+| Secret Name | Value | Example |
+|-------------|-------|----------|
+| `DATABRICKS_HOST` | Your workspace URL | `https://dbc-381633f5-fe84.cloud.databricks.com/` |
+| `DATABRICKS_TOKEN` | Your PAT token | `dapi1234567890abcdef...` |
+
+### Step 3: Verify Setup
+
+1. Go to **Repository** → **Settings** → **Secrets and variables** → **Actions**
+2. Confirm both secrets are listed
 3. Secrets cannot be viewed after creation (only updated/deleted)
 
-## GitHub Actions Workflow
+## Workflows Overview
 
-The repository includes a GitHub Actions workflow (`.github/workflows/deploy_databricks.yml`) that automatically:
-1. Validates the DAB configuration
-2. Deploys the bundle to Databricks
-3. Runs the data warehouse setup job
+### 1. Validate Bundle (`validate_bundle.yml`)
 
-## Required GitHub Secrets
+**Trigger**: Pull requests to `main`  
+**Purpose**: Fast validation without deployment  
+**Steps**:
+- ✅ Install Databricks CLI
+- ✅ Validate bundle configuration
+- ✅ Check for syntax errors
 
-Add these secrets to your GitHub repository:
+**Ignores**: Workflow changes, metric views, markdown files
 
-### Navigate to: Repository → Settings → Secrets and variables → Actions → New repository secret
+### 2. Deploy Bundle (`deploy_databricks.yml`)
 
-1. **DATABRICKS_HOST**
-   - Value: `https://dbc-381633f5-fe84.cloud.databricks.com/`
-   - Description: Your Databricks workspace URL
+**Trigger**: Push to `main` (after PR merge)  
+**Purpose**: Full deployment pipeline  
+**Steps**:
+1. ✅ Validate bundle configuration
+2. ✅ Deploy to Databricks workspace
+3. ✅ Run data warehouse setup job
 
-2. **DATABRICKS_TOKEN**
-   - Value: Your Databricks Personal Access Token
-   - How to create:
-     - Go to Databricks workspace → User Settings → Developer → Access Tokens
-     - Click "Generate New Token"
-     - Set expiration and description
-     - Copy the token (shown only once!)
+**Ignores**: Workflow changes, metric views, markdown files
 
-## Workflow Triggers
+**Manual Trigger**: Available via Actions tab → Run workflow
 
-### Validation (validate_bundle.yml)
-- **Pull Request to `main`**: Validates bundle configuration (fast feedback)
-- No deployment, only validation
+### 3. Sync Metric Views (`sync_metric_view.yml`)
 
-### Deployment (deploy_databricks.yml)
-- **Push to `main` branch**: Full deployment after PR merge
-  - Validates configuration
-  - Deploys bundle to Databricks
-  - Runs the data warehouse setup job
-- Ignores changes to workflows, metric views, and markdown files
+**Status**: 🚧 Work in Progress (disabled)  
+**Purpose**: Extract YAML from Unity Catalog, generate Power BI models  
+**Trigger**: Manual only (when ready)
+
+## Usage
+
+### Normal Development Workflow
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/my-changes
+
+# 2. Make changes
+# Edit SQL scripts, notebooks, etc.
+
+# 3. Commit and push
+git add .
+git commit -m "Add new metric view"
+git push origin feature/my-changes
+
+# 4. Create Pull Request
+# → validate_bundle.yml runs automatically
+# → Review validation results
+
+# 5. Merge PR
+# → deploy_databricks.yml runs automatically
+# → Check deployment in Actions tab
+```
 
 ### Manual Deployment
-- Go to **Actions** tab in GitHub
-- Select **"Deploy Databricks Asset Bundle"** workflow
-- Click **"Run workflow"**
-- Choose environment (`dev` or `prod`)
-- Click **"Run workflow"** button
+
+1. Go to **Actions** tab
+2. Select **"Deploy Databricks Asset Bundle"**
+3. Click **"Run workflow"**
+4. Choose environment (`dev` or `prod`)
+5. Click **"Run workflow"** button
+6. Monitor progress in Actions tab
 
 ## Environment Setup (Optional)
 
@@ -133,37 +187,26 @@ on:
 ### Authentication Failures
 - Verify `DATABRICKS_HOST` includes `https://` and trailing `/`
 - Regenerate `DATABRICKS_TOKEN` if expired
-- Check token has necessary permissions
+- Check token has workspace access permissions
 
 ### Validation Errors
-- Run locally: `databricks bundle validate -t dev`
-- Check YAML syntax in bundle files
-- Verify all referenced files exist
+```bash
+# Test locally first
+databricks bundle validate -t dev
+```
 
 ### Deployment Failures
-- Check workspace permissions
-- Verify catalog/schema names are correct
-- Ensure SQL Warehouse ID is valid
+- Check Databricks workspace permissions
+- Verify SQL Warehouse ID is correct
+- Ensure catalog `demo` exists or can be created
 
 ### Job Run Failures
-- Check job configuration in Databricks workspace
-- View job run logs in Databricks
-- Verify notebook/SQL script syntax
+- View logs in Databricks: **Workflows** → **Jobs** → Job run
+- Check notebook/SQL script syntax
+- Verify catalog and schema are accessible
 
-## Best Practices
+## Additional Resources
 
-1. **Always test in dev first** before deploying to prod
-2. **Use Pull Requests** to trigger validation before merging
-3. **Set up branch protection** on main branch
-4. **Require reviews** for production deployments
-5. **Monitor workflow runs** regularly
-6. **Rotate tokens periodically** for security
-7. **Use environment-specific secrets** for prod
-
-## Next Steps
-
-1. Add secrets to GitHub repository
-2. Push code to main branch or create a PR
-3. Watch workflow run in Actions tab
-4. Verify deployment in Databricks workspace
-5. Set up prod environment with approval gates
+- [Databricks Asset Bundles Documentation](https://docs.databricks.com/dev-tools/bundles/)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Databricks CLI Reference](https://docs.databricks.com/dev-tools/cli/)
