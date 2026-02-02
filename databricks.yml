@@ -17,8 +17,8 @@ targets:
     workspace:
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
     variables:
-      catalog: dev_catalog
-      schema: demo_tpch
+      catalog: demo
+      schema: tpch_semantic
       warehouse_id: "5eced0d6af754723"
 
 
@@ -27,8 +27,8 @@ targets:
     workspace:
       root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
     variables:
-      catalog: main
-      schema: demo_tpch
+      catalog: demo
+      schema: tpch_semantic
     
     # Require manual approval for production deployments
     run_as:
@@ -38,11 +38,11 @@ targets:
 variables:
   catalog:
     description: "Databricks catalog name"
-    default: dev_catalog
+    default: demo
   
   schema:
     description: "Database schema name"
-    default: demo_tpch
+    default: tpch_semantic
 
   cluster_node_type:
     description: "Node type for job clusters"

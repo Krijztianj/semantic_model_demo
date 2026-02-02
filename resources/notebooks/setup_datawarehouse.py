@@ -16,9 +16,9 @@
 
 # COMMAND ----------
 
-# Configuration variables
-catalog = 'main'
-schema = 'demo_tpch_semantic'
+# Configuration variables - can be overridden by notebook parameters
+catalog = dbutils.widgets.get('catalog') if 'catalog' in [w.name for w in dbutils.widgets.getAll()] else 'demo'
+schema = dbutils.widgets.get('schema') if 'schema' in [w.name for w in dbutils.widgets.getAll()] else 'tpch_semantic'
 
 # Create catalog and schema
 spark.sql(f'CREATE CATALOG IF NOT EXISTS {catalog}')
@@ -360,7 +360,13 @@ display(spark.sql(summary_sql))
 
 # COMMAND ----------
 
-sample_query = """
+# MAGIC %md
+# MAGIC ### Create orders_aggregated table
+
+# COMMAND ----------
+
+orders_aggregated_sql = """
+CREATE OR REPLACE TABLE orders_aggregated AS
 SELECT 
   dd.year,
   dd.quarter,
@@ -372,9 +378,26 @@ SELECT
 FROM fact_order_line fol
 JOIN dim_date dd ON fol.ship_date_id = dd.date_id
 JOIN dim_customer dc ON fol.customer_id = dc.customer_id
-WHERE dd.year = 1997
 GROUP BY dd.year, dd.quarter, dc.region, dc.nation
-ORDER BY dd.quarter, total_net_amount DESC
+"""
+
+spark.sql(orders_aggregated_sql)
+print(f"orders_aggregated created with {spark.table('orders_aggregated').count()} rows")
+
+# COMMAND ----------
+
+sample_query = """
+SELECT 
+  year,
+  quarter,
+  region,
+  nation,
+  total_net_amount,
+  total_quantity,
+  order_count
+FROM orders_aggregated
+WHERE year = 1997
+ORDER BY quarter, total_net_amount DESC
 LIMIT 20
 """
 
