@@ -1,0 +1,53 @@
+# Databricks Asset Bundle Configuration
+bundle:
+  name: semantic_model_demo
+
+include:
+  - resources/jobs/*.yml
+
+# Workspace configuration
+workspace:
+  host: https://dbc-381633f5-fe84.cloud.databricks.com/
+
+# Targets for different environments
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: dev_catalog
+      schema: demo_tpch
+      warehouse_id: "5eced0d6af754723"
+
+
+  prod:
+    mode: production
+    workspace:
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: main
+      schema: demo_tpch
+    
+    # Require manual approval for production deployments
+    run_as:
+      service_principal_name: ${var.prod_service_principal}
+
+# Define variables that can be used across resources
+variables:
+  catalog:
+    description: "Databricks catalog name"
+    default: dev_catalog
+  
+  schema:
+    description: "Database schema name"
+    default: demo_tpch
+
+  cluster_node_type:
+    description: "Node type for job clusters"
+    default: "i3.xlarge"
+  
+  warehouse_id:
+    description: "SQL Warehouse ID for SQL tasks"
+    default: "5eced0d6af754723"
