@@ -2,6 +2,8 @@
 bundle:
   name: semantic_model_demo
 
+databricks_cli_version: ">=0.218.0"
+
 include:
   - resources/jobs/*.yml
 
