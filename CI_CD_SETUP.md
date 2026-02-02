@@ -40,9 +40,16 @@ Add these secrets to your GitHub repository:
 
 ## Workflow Triggers
 
-### Automatic Deployment
-- **Push to `main` branch**: Automatically deploys to `dev` environment
-- **Pull Request to `main`**: Validates and deploys to `dev` for testing
+### Validation (validate_bundle.yml)
+- **Pull Request to `main`**: Validates bundle configuration (fast feedback)
+- No deployment, only validation
+
+### Deployment (deploy_databricks.yml)
+- **Push to `main` branch**: Full deployment after PR merge
+  - Validates configuration
+  - Deploys bundle to Databricks
+  - Runs the data warehouse setup job
+- Ignores changes to workflows, metric views, and markdown files
 
 ### Manual Deployment
 - Go to **Actions** tab in GitHub
@@ -79,7 +86,7 @@ For better control, set up GitHub Environments:
 ## Customization
 
 ### Deploy Only (No Job Run)
-Remove the last step in `.github/workflows/deploy.yml`:
+Remove the last step in `.github/workflows/deploy_databricks.yml`:
 ```yaml
 # Comment out or delete:
 # - name: Run Job

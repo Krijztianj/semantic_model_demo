@@ -1,12 +1,13 @@
 name: Deploy Databricks Asset Bundle
 
 on:
-  pull_request:
+  push:
     branches:
       - main
     paths-ignore:
       - '.github/workflows/**'
       - 'resources/metric_views/**'
+      - '**.md'
   workflow_dispatch:
     inputs:
       environment:

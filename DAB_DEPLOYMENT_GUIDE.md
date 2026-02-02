@@ -33,14 +33,21 @@ databricks bundle validate
 semantic_model_demo/
 ├── databricks.yml           # Main bundle configuration
 ├── resources/
-│   ├── jobs.yml            # Job definitions
-│   └── experiments.yml     # ML experiments (optional)
-├── notebooks/
-│   └── setup_datawarehouse.py
-├── sql_scripts/
-│   └── metric_view.sql
-├── metric_views/
-│   └── order_metrics_mv.yml
+│   ├── jobs/
+│   │   └── jobs.yml        # Job definitions
+│   ├── notebooks/
+│   │   └── setup_datawarehouse.py
+│   ├── sql_scripts/
+│   │   ├── order_metrics.sql
+│   │   └── orders_aggregated.sql
+│   └── metric_views/
+│       └── order_metrics.yml
+├── scripts/
+│   └── extract_metric_views.py
+├── .github/workflows/
+│   ├── validate_bundle.yml
+│   ├── deploy_databricks.yml
+│   └── sync_metric_view.yml
 └── .gitignore
 ```
 
@@ -79,22 +86,18 @@ databricks bundle destroy --target dev
 ## Environment Targets
 
 ### Dev (Default)
-- **Catalog**: `dev_catalog`
-- **Schema**: `demo_tpch`
+- **Catalog**: `demo`
+- **Schema**: `tpch_semantic`
 - **Location**: `/Workspace/Users/{user}/.bundle/semantic_model_demo/dev`
 - **Mode**: Development (allows rapid iteration)
 
-### Staging
-- **Catalog**: `staging_catalog`
-- **Schema**: `demo_tpch`
-- **Location**: `/Workspace/Shared/.bundle/semantic_model_demo/staging`
-- **Mode**: Production
-
 ### Prod
-- **Catalog**: `main`
-- **Schema**: `demo_tpch`
+- **Catalog**: `demo`
+- **Schema**: `tpch_semantic`
 - **Location**: `/Workspace/Shared/.bundle/semantic_model_demo/prod`
 - **Mode**: Production (requires service principal)
+
+**Note**: Both environments use the same catalog/schema. The bundle configuration can be customized per environment if needed.
 
 ## Configuration
 

@@ -107,8 +107,8 @@ def extract_metric_views(catalog: str, schema: str, output_dir: str):
 
 if __name__ == "__main__":
     # Get parameters from command line or environment variables
-    catalog = os.getenv("CATALOG", "main")
-    schema = os.getenv("SCHEMA", "demo_tpch_semantic")
+    catalog = os.getenv("CATALOG", "demo")
+    schema = os.getenv("SCHEMA", "tpch_semantic")
     output_dir = os.getenv("OUTPUT_DIR", "resources/metric_views")
     
     # Allow command line overrides

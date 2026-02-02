@@ -67,8 +67,17 @@ flowchart TB
 
 ## Repository Contents
 
-- **`setup_datawarehouse.py`** - Databricks notebook to create the data warehouse
-- **`semantic_model.yml`** - Semantic model definition (version 1.0) with metrics, dimensions, and relationships
+### Core Files
+- **`databricks.yml`** - Databricks Asset Bundle configuration
+- **`resources/notebooks/setup_datawarehouse.py`** - Data warehouse creation notebook
+- **`resources/sql_scripts/`** - SQL scripts for metric view creation
+- **`resources/jobs/jobs.yml`** - Job definitions for automated workflows
+- **`scripts/extract_metric_views.py`** - Extracts YAML definitions from Unity Catalog
+
+### CI/CD Workflows
+- **`validate_bundle.yml`** - Validates DAB on pull requests
+- **`deploy_databricks.yml`** - Deploys bundle and runs jobs after merge to main
+- **`sync_metric_view.yml`** - Syncs metric views (currently disabled, work in progress)
 
 ## Quick Start (Recommended)
 
@@ -76,11 +85,10 @@ flowchart TB
 Use the **`setup_datawarehouse.py`** Databricks notebook for the easiest setup:
 
 1. Upload `setup_datawarehouse.py` to your Databricks workspace
-2. Edit the configuration cell:
-```python
-catalog = 'main'        # Change to your catalog name
-schema = 'demo_tpch'    # Change to your schema name
-```
+2. The notebook uses parameters from the DAB job by default:
+   - **Catalog**: `demo`
+   - **Schema**: `tpch_semantic`
+   - Can be overridden via notebook widgets or manual edits
 3. Run all cells - the notebook will:
    - Create catalog and schema
    - Set the context automatically

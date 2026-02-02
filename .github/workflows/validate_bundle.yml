@@ -1,0 +1,32 @@
+name: Validate Databricks Asset Bundle
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/workflows/**'
+      - 'resources/metric_views/**'
+      - '**.md'
+
+jobs:
+  validate:
+    name: Validate DAB Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Databricks CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+          databricks --version
+
+      - name: Validate Bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          databricks auth env
+          databricks bundle validate -t dev

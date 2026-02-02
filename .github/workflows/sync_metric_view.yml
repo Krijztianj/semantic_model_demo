@@ -1,16 +1,7 @@
 name: Deploy Metric Views
 
+# Temporarily disabled - work in progress
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'resources/metric_views/**'
-  push:
-    branches:
-      - main
-    paths:
-      - 'resources/metric_views/**'
   workflow_dispatch:
     inputs:
       environment:
@@ -63,8 +54,8 @@ jobs:
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-          CATALOG: ${{ vars.CATALOG || 'main' }}
-          SCHEMA: ${{ vars.SCHEMA || 'demo_tpch_semantic' }}
+          CATALOG: ${{ vars.CATALOG || 'demo' }}
+          SCHEMA: ${{ vars.SCHEMA || 'tpch_semantic' }}
         run: |
           python scripts/extract_metric_views.py
 

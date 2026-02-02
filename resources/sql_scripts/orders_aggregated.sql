@@ -1,5 +1,5 @@
-USE CATALOG main;
-USE SCHEMA demo_tpch_semantic;
+USE CATALOG demo;
+USE SCHEMA tpch_semantic;
 
 CREATE OR REPLACE VIEW orders_aggregated_mv
 WITH METRICS

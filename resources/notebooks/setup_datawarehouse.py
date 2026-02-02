@@ -16,9 +16,9 @@
 
 # COMMAND ----------
 
-# Configuration variables
-catalog = 'main'
-schema = 'demo_tpch_semantic'
+# Configuration variables - can be overridden by notebook parameters
+catalog = dbutils.widgets.get('catalog') if 'catalog' in [w.name for w in dbutils.widgets.getAll()] else 'demo'
+schema = dbutils.widgets.get('schema') if 'schema' in [w.name for w in dbutils.widgets.getAll()] else 'tpch_semantic'
 
 # Create catalog and schema
 spark.sql(f'CREATE CATALOG IF NOT EXISTS {catalog}')
