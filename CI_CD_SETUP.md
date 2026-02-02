@@ -1,8 +1,21 @@
 # CI/CD Setup Guide for Databricks Asset Bundle
 
+## Prerequisites
+
+⚠️ **IMPORTANT**: Before running any GitHub Actions workflows, you must configure the required secrets in your repository.
+1. Validates the DAB configuration
+2. Deploys the bundle to Databricks
+3. Runs the data warehouse setup job
+
+## Workflow Triggersre Set
+After adding secrets:
+1. Go to Repository → Settings → Secrets and variables → Actions
+2. You should see both `DATABRICKS_HOST` and `DATABRICKS_TOKEN` listed
+3. Secrets cannot be viewed after creation (only updated/deleted)
+
 ## GitHub Actions Workflow
 
-The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that automatically:
+The repository includes a GitHub Actions workflow (`.github/workflows/deploy_databricks.yml`) that automatically:
 1. Validates the DAB configuration
 2. Deploys the bundle to Databricks
 3. Runs the data warehouse setup job
