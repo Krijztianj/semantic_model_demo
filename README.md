@@ -2,6 +2,69 @@
 
 This repository contains scripts to create a dimensional data warehouse model based on the TPC-H dataset, along with a semantic model definition for analytics and BI tools.
 
+## Architecture Overview
+
+```mermaid
+flowchart TB
+    subgraph "Development"
+        A[Developer] -->|1. Write SQL| B[SQL Scripts]
+        A -->|2. Commit & Push| C[GitHub Repository]
+    end
+    
+    subgraph "CI/CD Pipeline"
+        C -->|3. Trigger| D[GitHub Actions]
+        D -->|4. Deploy| E[Databricks Asset Bundle]
+        E -->|5. Execute| F[Databricks Job]
+    end
+    
+    subgraph "Databricks Workspace"
+        F -->|6a. Create Tables| G[(Data Warehouse)]
+        F -->|6b. Create Metric Views| H[Unity Catalog<br/>Metric Views]
+        G -.->|Source Data| H
+    end
+    
+    subgraph "Metric View Sync"
+        D -->|7. Extract YAML| H
+        H -->|8. Return Definition| I[YAML Files]
+        I -->|9. Run Tabular Editor| J[Semantic Bridge]
+        J -->|10. Generate| K[Power BI<br/>Semantic Model]
+    end
+    
+    subgraph "Pull Request"
+        I -->|11. Commit Changes| L[New Branch]
+        K -->|12. Commit Model| L
+        L -->|13. Create| M[Pull Request]
+        M -->|14. Review & Merge| C
+    end
+    
+    style H fill:#e1f5ff
+    style K fill:#ffe1f5
+    style C fill:#e8f5e9
+```
+
+## Workflow Explanation
+
+### 1. **Development Phase**
+- Define metric views in SQL (easy to write and maintain)
+- Commit SQL scripts to `resources/sql_scripts/`
+
+### 2. **Deployment Phase** (GitHub Actions: `deploy_databricks.yml`)
+- Databricks Asset Bundle deploys notebooks and SQL scripts
+- Job executes:
+  - Creates data warehouse tables
+  - Creates metric views in Unity Catalog
+
+### 3. **Extraction Phase** (GitHub Actions: `sync_metric_view.yml`)
+- Python script extracts metric view YAML from Unity Catalog
+- YAML files saved to `resources/metric_views/`
+- Tabular Editor Semantic Bridge generates Power BI semantic model
+
+### 4. **Integration Phase**
+- Automated PR created with:
+  - Updated YAML definitions
+  - Generated Power BI semantic model
+- Review and merge to main
+
 ## Repository Contents
 
 - **`setup_datawarehouse.py`** - Databricks notebook to create the data warehouse

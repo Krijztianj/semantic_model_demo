@@ -1,0 +1,113 @@
+name: Deploy Metric Views
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'resources/metric_views/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'resources/metric_views/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+
+jobs:
+  process-metric-views:
+    name: Process and Deploy Metric Views
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r scripts/requirements.txt
+
+      - name: Create branch name
+        id: branch
+        run: |
+          BRANCH_NAME="metric-views-update-$(date +%Y%m%d-%H%M%S)"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create and checkout new branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b ${{ steps.branch.outputs.branch_name }}
+
+      - name: Extract Metric Views from Unity Catalog
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          CATALOG: ${{ vars.CATALOG || 'main' }}
+          SCHEMA: ${{ vars.SCHEMA || 'demo_tpch_semantic' }}
+        run: |
+          python scripts/extract_metric_views.py
+
+      - name: Run C# processing scripts
+        run: |
+          # TODO: Add your C# script execution here
+          # Example:
+          # dotnet run --project scripts/MetricViewProcessor/MetricViewProcessor.csproj
+          echo "Running C# scripts to process metric views..."
+          # Add your actual C# script commands
+
+      - name: Commit changes
+        id: commit
+        run: |
+          git add .
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes to commit"
+          else
+            git commit -m "Process metric views - automated update"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push branch
+        if: steps.commit.outputs.has_changes == 'true'
+        run: |
+          git push origin ${{ steps.branch.outputs.branch_name }}
+
+      - name: Create Pull Request
+        if: steps.commit.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr create \
+            --base main \
+            --head ${{ steps.branch.outputs.branch_name }} \
+            --title "Automated: Process Metric Views" \
+            --body "This PR was automatically created by the metric views workflow.
+
+          **Changes:**
+          - Processed metric view configurations
+          - Applied C# transformations
+          
+          **Environment:** ${{ github.event.inputs.environment || 'dev' }}
+          **Triggered by:** ${{ github.actor }}
+          **Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

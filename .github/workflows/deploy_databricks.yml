@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '.github/workflows/**'
+      - 'resources/metric_views/**'
   workflow_dispatch:
     inputs:
       environment:

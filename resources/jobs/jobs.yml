@@ -20,7 +20,18 @@ resources:
           sql_task:
             warehouse_id: ${var.warehouse_id}
             file:
-              path: ../sql_scripts/metric_view.sql
+              path: ../sql_scripts/order_metrics.sql
+          
+          timeout_seconds: 600
+          max_retries: 1
+        
+        - task_key: create_aggregated_metric_view
+          depends_on:
+            - task_key: setup_warehouse
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../sql_scripts/orders_aggregated_mv.sql
           
           timeout_seconds: 600
           max_retries: 1
