@@ -232,6 +232,60 @@ All configuration is in `databricks.yml`:
 - **Targets**: `dev` and `prod`
 - **SQL Warehouse ID**: Configure in variables section
 
+## Power BI Integration
+
+### GitHub Actions Setup (Recommended)
+
+The `sync_metric_view.yml` workflow automatically converts metric views to Power BI models using a **self-hosted GitHub runner**.
+
+**Prerequisites:**
+1. Set up a self-hosted GitHub runner (Windows machine)
+2. Install Tabular Editor 3 Enterprise on the runner at: `C:\Program Files\Tabular Editor 3\TabularEditor3.exe`
+3. Install Python 3.x with PyYAML: `pip install pyyaml`
+
+The workflow will:
+- Extract metric view YAML from Unity Catalog
+- Generate C# scripts from YAML (Python)
+- Execute scripts with TE3 to create Power BI models
+- Create PR with generated .bim files
+
+**To set up self-hosted runner:**
+1. Go to your repo → Settings → Actions → Runners → New self-hosted runner
+2. Follow instructions to install on Windows machine
+3. Install TE3 Enterprise and Python on that machine
+4. Enable the workflow by changing `workflow_dispatch` trigger
+
+### Local Conversion (Alternative)
+
+If you prefer to run conversions locally:
+
+### Local Conversion (Alternative)
+
+If you prefer to run conversions locally:
+
+1. **Install TE3 Enterprise** at `C:\Program Files\Tabular Editor 3\TabularEditor3.exe`
+
+2. **Extract metric views** from Unity Catalog:
+   ```bash
+   python scripts/extract_metric_views.py
+   ```
+
+3. **Convert to Power BI**:
+   ```powershell
+   .github/scripts/convert_all_metric_views.ps1
+   ```
+
+4. **Output**: Power BI .bim files in `powerbi/` directory
+
+### How It Works
+
+The conversion process uses a hybrid approach:
+1. **Python parses YAML** - extracts tables, columns, measures, relationships
+2. **Python generates C# script** - creates TE3 commands using TOM API
+3. **TE3 executes script** - generates proper Power BI Model.bim file
+
+This approach works in CI/CD on self-hosted runners without requiring TE3 on GitHub-hosted runners.
+
 ## Contributing
 
 See deployment guides for development workflow. All changes should go through pull requests for validation.

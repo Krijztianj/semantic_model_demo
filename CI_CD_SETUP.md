@@ -184,6 +184,47 @@ on:
 
 ## Troubleshooting
 
+### Self-Hosted Runner Setup
+
+The `sync_metric_view.yml` workflow requires a self-hosted runner with Tabular Editor 3 Enterprise.
+
+**Setup steps:**
+
+1. **Create self-hosted runner:**
+   - Go to: `https://github.com/Krijztianj/semantic_model_demo/settings/actions/runners/new`
+   - Select Windows
+   - Follow installation instructions
+
+2. **Install prerequisites on runner machine:**
+   ```powershell
+   # Install Python
+   winget install Python.Python.3.11
+   
+   # Install PyYAML
+   pip install pyyaml
+   
+   # Install Tabular Editor 3 Enterprise (requires license)
+   # Download from: https://tabulareditor.com/
+   # Install to: C:\Program Files\Tabular Editor 3\
+   ```
+
+3. **Start the runner:**
+   ```powershell
+   .\run.cmd
+   ```
+
+4. **Enable the workflow:**
+   - Edit `.github/workflows/sync_metric_view.yml`
+   - Change trigger from `workflow_dispatch` to your desired trigger (e.g., `push`, `schedule`)
+
+**Alternative: Use GitHub-hosted runners with manual conversion**
+- Run `python scripts/extract_metric_views.py` locally
+- Run `.github/scripts/convert_all_metric_views.ps1` locally
+- Commit generated .bim files
+- Let CI/CD deploy the committed files
+
+## Troubleshooting (continued)
+
 ### Authentication Failures
 - Verify `DATABRICKS_HOST` includes `https://` and trailing `/`
 - Regenerate `DATABRICKS_TOKEN` if expired

@@ -16,7 +16,7 @@ on:
 jobs:
   process-metric-views:
     name: Process and Deploy Metric Views
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # Requires self-hosted runner with TE3 installed
     
     steps:
       - name: Checkout code
@@ -59,13 +59,23 @@ jobs:
         run: |
           python scripts/extract_metric_views.py
 
-      - name: Run C# processing scripts
+      - name: Install Tabular Editor 3 CLI
         run: |
-          # TODO: Add your C# script execution here
-          # Example:
-          # dotnet run --project scripts/MetricViewProcessor/MetricViewProcessor.csproj
-          echo "Running C# scripts to process metric views..."
-          # Add your actual C# script commands
+          # Verify Tabular Editor 3 is installed on self-hosted runner
+          $tePath = "C:\Program Files\Tabular Editor 3\TabularEditor3.exe"
+          if (-not (Test-Path $tePath)) {
+            Write-Error "TabularEditor3 not found at: $tePath"
+            Write-Error "Please install Tabular Editor 3 Enterprise on the self-hosted runner"
+            exit 1
+          }
+          Write-Host "✓ Found Tabular Editor 3 at: $tePath" -ForegroundColor Green
+        shell: pwsh
+
+      - name: Convert Metric Views to Power BI
+        run: |
+          # Run the conversion script
+          .\.github\scripts\convert_all_metric_views.ps1
+        shell: pwsh
 
       - name: Commit changes
         id: commit
@@ -96,8 +106,9 @@ jobs:
             --body "This PR was automatically created by the metric views workflow.
 
           **Changes:**
-          - Processed metric view configurations
-          - Applied C# transformations
+          - Extracted metric view YAML from Unity Catalog
+          - Converted metric views to Power BI projects (.pbip)
+          - Generated Power BI semantic models
           
           **Environment:** ${{ github.event.inputs.environment || 'dev' }}
           **Triggered by:** ${{ github.actor }}

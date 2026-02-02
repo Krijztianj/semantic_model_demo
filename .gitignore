@@ -45,3 +45,10 @@ Thumbs.db
 
 # Databricks
 *.dbc
+
+# Power BI generated files
+powerbi/*/generate_model.csx
+powerbi/*/Model.bim
+
+# Tabular Editor
+tools/TabularEditor*.exe
